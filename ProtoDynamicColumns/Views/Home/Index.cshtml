@@ -1,0 +1,141 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet" />
+<style type="text/css">
+    .p-t-25 {
+        top: 25px !important;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12 text-right" style="margin-top:25px!important;">
+        <input type="button" id="btnShowColumnsList" class="btn btn-success" value="Columns" onclick="OpenColumnModal();" />
+    </div>
+</div>
+<div class="container" style="top:20px!important;">
+    <div class="row">
+        <div class="col-md-12 col-sm-12 p-t-25">
+            <table class="table table-responsive table-hover" id="tblProto"></table>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+@*modal for columns*@
+
+<div class="modal fade" id="columnmodal" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Columns</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="dvColumnContainer"> </div>
+            </div>
+            <div class="modal-footer">
+                <input type="button" class="btn btn-primary" data-dismiss="modal" value="Save" onclick="UpdateColumnSettings()" />
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@*modal for columns*@
+
+@section scripts{
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript">
+        var _jsonObj = "";
+        var _jsonColumns = "";
+        $(document).ready(function () {
+            FetchServerData();
+        });
+
+        var FetchServerData = () => {
+            $.ajax({
+                type: "Get",
+                url: "@Url.Action("GetJsonData","Home")",
+                success: function (response) {
+                    if (response.status) {
+                        _jsonObj = $.parseJSON(response.data);
+                        _jsonColumns = $.grep(_jsonObj.columns, function (obj, i) {
+                            return obj.visible == "1";
+                        });
+                        InitializeDatatable(_jsonObj);
+                    }
+                    else {
+                        alert("Internal Server Error");
+                    }
+                },
+                error: function (xhr) {
+                    alert(xhr.statusText.toString());
+                }
+            });
+        };
+
+        function InitializeDatatable(Obj) {
+            $("#tblProto").DataTable({
+              //"columns": Obj.columns
+                "columns": _jsonColumns,
+                "data": Obj.data
+            });
+        }
+
+        function OpenColumnModal() {
+            var _html = "<table class='table table-responsive table-hover' id='tblColumnsSetting'><thead>";
+            _html += "<tr><th class='text-center'>Field Name</th><th class='text-center'></th></tr></thead>";
+            _html += "<tbody>";
+            $.each(_jsonObj.columns, function (index, obj) {
+                var _checked = "";
+                if (obj.visible == "1")
+                    _checked = "checked";
+                else
+                    _checked = "";
+
+                _html += '<tr><td class="text-center">' + obj.title + '</td><td class="text-center"><input type="checkbox" id="chkColumnVisible" ' + _checked + ' /></td></tr>';
+            });
+            _html += "</tbody></table>";
+            $("#dvColumnContainer").html(_html);
+            $("#columnmodal").modal('show');
+        };
+
+        function UpdateColumnSettings() {
+            var arr = [];
+            debugger;
+            $("#tblColumnsSetting tbody tr").each(function () {
+                var obj = new Object();
+                obj.title = $.trim($(this).find('td:eq(0)').html());
+                obj.data = $.trim($(this).find('td:eq(0)').html());
+                obj.visible = ($(this).find('td:eq(1)').find('input[type="checkbox"]').prop("checked")==true?"1":"0");
+                arr.push(obj);
+            });
+            console.log(arr);
+            $.ajax({
+                type: "post",
+                url: "@Url.Action("UpdateTableJson","Home")",
+                data: { jsonObj: arr },
+                success: function (response) {
+                    if (response.status) {
+                        console.log(response);
+                    }
+                    alert(response.message);
+                    $("#columnmodal").modal('hide');
+                    location.reload();
+                }
+            });
+        }
+    </script>
+}
+
+
+
+
+
+

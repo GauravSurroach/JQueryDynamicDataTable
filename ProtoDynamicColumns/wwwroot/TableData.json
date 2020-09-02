@@ -1,0 +1,31 @@
+{
+  "columns": [
+    {
+      "title": "Name",
+      "data": "Name",
+      "visible": "1"
+    },
+    {
+      "title": "LastName",
+      "data": "LastName",
+      "visible": "1"
+    },
+    {
+      "title": "Address",
+      "data": "Address",
+      "visible": "0"
+    }
+  ],
+  "data": [
+    {
+      "Name": "Gaurav",
+      "LastName": "Surroach",
+      "Address": "Himachal Pradesh"
+    },
+    {
+      "Name": "test name",
+      "LastName": "test lastname",
+      "Address": "test Address"
+    }
+  ]
+}
